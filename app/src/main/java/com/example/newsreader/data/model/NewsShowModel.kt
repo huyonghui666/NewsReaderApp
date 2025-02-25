@@ -3,7 +3,7 @@ package com.example.newsreader.data.model
 import com.squareup.moshi.Json
 
 data class NewsShowResponse(
-    @Json(name = "data")val newsShowData:List<NewsShowModel>?
+    @Json(name = "data")val newsShowData:List<NewsShowModel>
 )
 
 data class NewsShowModel(

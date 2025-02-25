@@ -8,7 +8,7 @@ import javax.inject.Inject
 
 class GetNewsShowUseCase @Inject constructor(private val newsShowRepository: NewsShowRepository) {
 
-    operator fun invoke(channel:String,page:String): Flow<List<NewsShowModel>> = flow {
+    /*operator fun invoke(channel:String,page:String): Flow<List<NewsShowModel>> = flow {
         try {
             //获取新闻数据
             val newsShowList = newsShowRepository.getNewsShow(channel,page)
@@ -17,5 +17,7 @@ class GetNewsShowUseCase @Inject constructor(private val newsShowRepository: New
         }catch (e:Exception){
             e.printStackTrace()
         }
-    }
+    }*/
+
+    operator fun invoke(channel: String)=newsShowRepository.newsShowPaging(channel)
 }

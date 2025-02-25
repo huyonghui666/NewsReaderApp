@@ -20,6 +20,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+
     // 确保启用 buildConfig
     buildFeatures {
         buildConfig = true
@@ -64,6 +65,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.paging.common.android)
+    implementation(libs.androidx.material3.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -100,5 +102,8 @@ dependencies {
     implementation("androidx.paging:paging-runtime:3.2.1")        // 核心库
     implementation("androidx.paging:paging-compose:3.2.1")       // Compose 支持
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2") // ViewModel
+
+    //刷新组件
+    implementation ("androidx.compose.material3:material3:1.3.1")
 
 }
