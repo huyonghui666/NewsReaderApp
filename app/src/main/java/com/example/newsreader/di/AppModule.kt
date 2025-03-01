@@ -1,15 +1,19 @@
 package com.example.newsreader.di
 
+import android.content.Context
 import com.example.newsreader.data.api.NewsShowApiService
+import com.example.newsreader.data.api.SearchNewsApiService
 import com.example.newsreader.data.remote.NewsShowRemoteDataSource
+import com.example.newsreader.data.remote.SearchNewsDataRemote
 import com.example.newsreader.data.repository.NewsShowRepositoryImpl
 import com.example.newsreader.domain.repository.NewsShowRepository
-import com.squareup.moshi.Moshi
+import com.example.newsreader.util.PreferencesManager
 import com.squareup.moshi.Moshi.*
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -57,7 +61,21 @@ object AppModule {
     }
 
     /**
-     * 提供数据源
+     * 获取搜索的新闻
+     */
+    @Provides
+    @Singleton
+    fun provideSearchNewsApiService(okHttpClient: OkHttpClient): SearchNewsApiService {
+        return Retrofit.Builder()
+            .baseUrl("https://whyta.cn/api/tx/") // Replace with your API base URL
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .client(okHttpClient)
+            .build()
+            .create(SearchNewsApiService::class.java)
+    }
+
+    /**
+     * 提供新闻数据源
      */
     @Provides
     @Singleton
@@ -66,14 +84,35 @@ object AppModule {
     }
 
     /**
+     * 提供搜索新闻数据源
+     */
+    @Provides
+    @Singleton
+    fun provideSearchNewsRemoteDataSource(searchNewsApiService: SearchNewsApiService): SearchNewsDataRemote {
+        return SearchNewsDataRemote(searchNewsApiService)
+    }
+
+    /**
      *提供新闻仓库对象
      */
     @Provides
     @Singleton
     fun provideNewsShowRepository(
-        remoteDataSource: NewsShowRemoteDataSource,
+        newsShowRemoteDataSource: NewsShowRemoteDataSource,
+        searchNewsRemote: SearchNewsDataRemote
     ): NewsShowRepository {
-        return NewsShowRepositoryImpl(remoteDataSource)
+        return NewsShowRepositoryImpl(newsShowRemoteDataSource,searchNewsRemote)
+    }
+
+    /**
+     * 提供sharePreferences的依赖
+     */
+    @Provides
+    @Singleton
+    fun providePreferencesManager(
+        @ApplicationContext context: Context  // 自动注入 Application Context
+    ): PreferencesManager {
+        return PreferencesManager(context)
     }
 
 }

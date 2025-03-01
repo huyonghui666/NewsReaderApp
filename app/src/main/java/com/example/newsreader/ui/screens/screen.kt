@@ -1,15 +1,22 @@
 package com.example.newsreader.ui.screens
 
+import android.content.Intent
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -17,20 +24,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.example.newsreader.ui.activity.SearchNewsActivity
 import com.example.newsreader.ui.components.BottomNavBar
+import com.example.newsreader.ui.components.IntentSearchNewsBar
 import com.example.newsreader.ui.components.NewsCategoryTabs
 import com.example.newsreader.ui.components.NewsShowCard
 import com.example.newsreader.ui.viewmodel.NewsShowViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.time.delay
+import kotlinx.coroutines.launch
 
 
 // 主界面
@@ -45,17 +58,36 @@ fun MainScreen(newsShowViewModel: NewsShowViewModel = hiltViewModel()) {
     val currentChannel by newsShowViewModel.currentChannel.collectAsState()
     val newsItems = newsShowViewModel.newsFlow.collectAsLazyPagingItems()
     val isRefreshing by newsShowViewModel.isRefreshing.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
-
-    Scaffold(
-        topBar = {NewsCategoryTabs(
-            modifier = Modifier.fillMaxWidth(),
-            onCategorySelected = { channel ->
-                // 调用Api去搜索相关频道的新闻
-                newsShowViewModel.getNewsShow(channel)
-
+    //设置组件在系统栏下面
+    Scaffold(modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
+        topBar = {
+            Column{
+                //点击跳转到搜索栏
+                IntentSearchNewsBar(
+                    modifier = Modifier
+                        .padding(30.dp,20.dp,0.dp,0.dp)
+                        //点击跳转搜索页面
+                        .clickable {
+                            val intent=Intent(context,SearchNewsActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                )
+                //新闻导航条
+                NewsCategoryTabs(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    onCategorySelected = { channel ->
+                        // 调用Api去搜索相关频道的新闻
+                        coroutineScope.launch {
+                            newsShowViewModel.getNewsShow(channel)
+                        }
+                    }
+                )
             }
-        )},
+        },
         bottomBar = { BottomNavBar(navController) },
     ) { innerPadding ->
         if (isLoading){
@@ -108,12 +140,11 @@ fun MainScreen(newsShowViewModel: NewsShowViewModel = hiltViewModel()) {
                         //加载新闻
                         items(
                             count = newsItems.itemCount,
-                            /*key = { index -> newsItems[index]?.id ?: index }*/
                         ) { index ->
                             val item = newsItems[index]
                             if (item != null) {
                                 if (item.url!="" && item.imgsrc!=""){
-                                    Log.d("newsShowTAG", item.title.toString())
+                                    //Log.d("newsShowTAG", item.title.toString())
                                     NewsShowCard(item)
                                 }
                             }

@@ -1,7 +1,6 @@
 package com.example.newsreader.ui.components
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
@@ -15,14 +14,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,18 +41,38 @@ import com.example.newsreader.domain.models.NewsShowModel
 
 
 /**
- * 搜索栏
+ * 点击跳转到搜索栏
  */
-/*@Preview
-@Composable
-private fun searchNewsBar(){
 
-}*/
+@Composable
+fun IntentSearchNewsBar(
+    modifier: Modifier=Modifier
+){
+    Row(
+        modifier=modifier
+    ) {
+        Icon(
+            Icons.Default.Search,
+            contentDescription = "Search Icon",
+
+            )
+        Text(text = "搜索",
+            color = MaterialTheme.colorScheme.surfaceDim,
+            modifier=Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+        )
+    }
+
+}
+
+
+
 
 
 
 //打开网页
-private fun openWebPage(context: Context, url: String) {
+fun openWebPage(context: Context, url: String) {
     try {
         // 确保 URL 格式正确
         val validUrl = if (!url.startsWith("http://") && !url.startsWith("https://")) {
@@ -196,7 +214,6 @@ fun NewsCategoryTabs(
                 onClick = {
                     selectedCategory = index
                     //回调函数传出点击的title
-                    //Log.d("NewsCategoryTabsTAG", category.title)
                     onCategorySelected(category.title)
                 },
                 text = {

@@ -7,7 +7,16 @@ import retrofit2.http.Query
 
 interface SearchNewsApiService {
 
-    @GET("guonei?key=${BuildConfig.SearchNews_KEY}&num=50&page=1")
-    suspend fun getSearchNews(@Query("word")word:String):SearchNewsModel
-
+    /**
+     * 查询新闻,key必须放在前面
+     * @param word:关键词
+     * @param page：页数
+     */
+    @GET("generalnews")
+    suspend fun getSearchNews(
+        @Query("key")key:String= BuildConfig.SearchNews_KEY,
+        @Query("word")word:String,
+        @Query("num")num:Int=10,
+        @Query("page")page:Int
+    ): SearchNewsModel
 }

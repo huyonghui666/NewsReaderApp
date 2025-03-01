@@ -4,30 +4,26 @@ package com.example.newsreader.data.repository
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.example.newsreader.data.remote.NewsShowRemoteDataSource
+import com.example.newsreader.data.remote.SearchNewsDataRemote
 import com.example.newsreader.domain.models.NewsShowModel
+import com.example.newsreader.domain.models.SearchNews
 import com.example.newsreader.domain.repository.NewsShowRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class NewsShowRepositoryImpl @Inject constructor(
     private val newsShowRemoteDataSource: NewsShowRemoteDataSource,
+    private val searchNewsDataRemote: SearchNewsDataRemote
 ) : NewsShowRepository {
 
-    /*override suspend fun getNewsShow(channel: String,page:String): List<NewsShowModel> {
-        val newsShow = newsShowRemoteDataSource.getNewsShow(channel,page)
-        return newsShow.newsShowData!!.map {
-            NewsShowModel(
-                time = it.time,
-                title = it.title,
-                imgsrc = it.imgsrc,
-                url = it.url
-            )
-        }
-    }*/
 
+    /**
+     * 实现分页加载和将data的modle数据映射到domain的model
+     */
     override fun newsShowPaging(channel: String): Flow<PagingData<NewsShowModel>> {
-        return newsShowRemoteDataSource.newsShowPaging(channel)!!.map { pagingData ->
+        return newsShowRemoteDataSource.newsShowPaging(channel=channel)!!.map { pagingData ->
             pagingData.map { dataModel->
                 NewsShowModel(
                     time = dataModel.time,
@@ -36,6 +32,27 @@ class NewsShowRepositoryImpl @Inject constructor(
                     url = dataModel.url
                 )
             }
+        }
+    }
+
+    /**
+     * 实现搜索新闻
+     */
+    override fun searchNewsPaging(word: String?): Flow<PagingData<SearchNews>>{
+        if (word!=null){
+            return  searchNewsDataRemote.searchNewsPaging(word = word).map { searchNews ->
+                searchNews.map {dataModel->
+                    SearchNews(
+                        time = dataModel.time,
+                        title = dataModel.title,
+                        source = dataModel.source,
+                        picUrl = dataModel.picUrl,
+                        url = dataModel.url
+                    )
+                }
+            }
+        }else{
+            return flowOf(PagingData.empty())
         }
     }
 
