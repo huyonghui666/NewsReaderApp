@@ -1,0 +1,8 @@
+package com.example.newsreader.domain.models
+
+import com.squareup.moshi.Json
+
+//头条热点词
+data class TouTiaoHot(
+    @Json(name = "word")val word:String
+)

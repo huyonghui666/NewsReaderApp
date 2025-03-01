@@ -61,7 +61,7 @@ object AppModule {
     }
 
     /**
-     * 获取搜索的新闻
+     * 获取搜索的新闻和头条热点
      */
     @Provides
     @Singleton
@@ -73,6 +73,7 @@ object AppModule {
             .build()
             .create(SearchNewsApiService::class.java)
     }
+
 
     /**
      * 提供新闻数据源
@@ -92,6 +93,8 @@ object AppModule {
         return SearchNewsDataRemote(searchNewsApiService)
     }
 
+
+
     /**
      *提供新闻仓库对象
      */
@@ -99,9 +102,9 @@ object AppModule {
     @Singleton
     fun provideNewsShowRepository(
         newsShowRemoteDataSource: NewsShowRemoteDataSource,
-        searchNewsRemote: SearchNewsDataRemote
+        searchNewsRemoteDataSource: SearchNewsDataRemote
     ): NewsShowRepository {
-        return NewsShowRepositoryImpl(newsShowRemoteDataSource,searchNewsRemote)
+        return NewsShowRepositoryImpl(newsShowRemoteDataSource,searchNewsRemoteDataSource)
     }
 
     /**

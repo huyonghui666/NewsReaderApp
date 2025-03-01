@@ -3,6 +3,7 @@ package com.example.newsreader.domain.repository
 import androidx.paging.PagingData
 import com.example.newsreader.domain.models.NewsShowModel
 import com.example.newsreader.domain.models.SearchNews
+import com.example.newsreader.domain.models.TouTiaoHot
 import kotlinx.coroutines.flow.Flow
 
 
@@ -19,4 +20,9 @@ interface NewsShowRepository {
      * @param word 搜索关键字
      */
     fun searchNewsPaging(word: String?): Flow<PagingData<SearchNews>>
+
+    /**
+     * 获取头条热点
+     */
+    //suspend fun getTouTiaohotHot():List<TouTiaoHot>
 }

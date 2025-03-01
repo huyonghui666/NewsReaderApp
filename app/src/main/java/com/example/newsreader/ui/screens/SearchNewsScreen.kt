@@ -52,7 +52,7 @@ import kotlinx.coroutines.launch
 fun SearchNewsScreen(searchNewsViewModel: SearchNewsViewModel= hiltViewModel()){
     val searchWord by searchNewsViewModel.searchWord.collectAsState()
     val searchNewsFlow = searchNewsViewModel.searchNewsFlow.collectAsLazyPagingItems()
-    val searchPress by searchNewsViewModel.searchPress.collectAsState()
+    //val searchPress by searchNewsViewModel.searchPress.collectAsState()
     val rememberCoroutineScope= rememberCoroutineScope()
     val historicalSearchList by searchNewsViewModel.historicalSearchList.collectAsState()
     // 控制是否显示清空对话框的状态
@@ -150,8 +150,10 @@ fun SearchNewsScreen(searchNewsViewModel: SearchNewsViewModel= hiltViewModel()){
                 onSearchHistoryTextClicked = {word: String ->
                     //修改word
                     searchNewsViewModel.getSearchWord(word)
-                    //搜索相关新闻
-
+                    //搜索相关的新闻
+                    rememberCoroutineScope.launch {
+                        searchNewsViewModel.getSearchPress(true)
+                    }
                 }
             )
             // 根据状态显示清空对话框

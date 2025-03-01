@@ -24,6 +24,10 @@ class SearchNewsViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager
 ) : ViewModel() {
 
+
+    /*//改变搜索关键字和光标位置
+    private val _searchWord = MutableStateFlow(TextFieldValue(""))
+    val searchWord: StateFlow<TextFieldValue> = _searchWord.asStateFlow()*/
     // 搜索关键字
     private val _searchWord = MutableStateFlow<String?>(null)
     val searchWord: StateFlow<String?> = _searchWord.asStateFlow()
@@ -38,7 +42,7 @@ class SearchNewsViewModel @Inject constructor(
 
     //当点击搜索进行数据获取
     private val _searchPress=MutableStateFlow<Boolean>(false)
-    val searchPress=_searchPress.asStateFlow()
+    //val searchPress=_searchPress.asStateFlow()
     val searchNewsFlow=_searchPress
         .filter { it }    //过滤true的可以继续进行flatMapLatest
         .flatMapLatest {searchPress->
@@ -67,9 +71,7 @@ class SearchNewsViewModel @Inject constructor(
     private val _historicalSearchList = MutableStateFlow(mutableListOf<String>())
     val historicalSearchList: StateFlow<MutableList<String>> = _historicalSearchList.asStateFlow()
 
-    /*//改变文本和光标
-    private val _searchWord = MutableStateFlow(TextFieldValue(""))
-    val searchWord: StateFlow<TextFieldValue> = _searchWord.asStateFlow()*/
+
 
     // 最大缓存数量
     private val maxSearchHistory = 10

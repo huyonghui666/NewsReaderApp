@@ -7,6 +7,7 @@ import com.example.newsreader.data.remote.NewsShowRemoteDataSource
 import com.example.newsreader.data.remote.SearchNewsDataRemote
 import com.example.newsreader.domain.models.NewsShowModel
 import com.example.newsreader.domain.models.SearchNews
+import com.example.newsreader.domain.models.TouTiaoHot
 import com.example.newsreader.domain.repository.NewsShowRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -55,5 +56,21 @@ class NewsShowRepositoryImpl @Inject constructor(
             return flowOf(PagingData.empty())
         }
     }
+
+
+    /**
+     * 获取头条热点
+     */
+    /*override suspend fun getTouTiaohotHot(): List<TouTiaoHot> {*//*
+        val newsShow = searchNewsDataRemote. (channel)
+        Log.d("NewsShowRepositoryImpl", newsShow.newsShowData.toString())
+        return newsShow.newsShowData!!.map {
+            NewsShowModel(
+                time = it.time,
+                title = it.title,
+                imgsrc = it.imgsrc
+            )
+        }*//*
+    }*/
 
 }

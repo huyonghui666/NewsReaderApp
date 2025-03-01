@@ -20,4 +20,10 @@ class SearchNewsDataRemote @Inject constructor(
         ),
         pagingSourceFactory = { SearchNewsPagingSource(searchNewsService, word) }
     ).flow
+
+    /**
+     * 获取头条热点
+     */
+    suspend fun getTouTiaohotHot()=searchNewsService.getTouTiaohotHot()
+
 }

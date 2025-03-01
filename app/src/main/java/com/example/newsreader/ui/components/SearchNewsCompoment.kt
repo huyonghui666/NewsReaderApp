@@ -52,7 +52,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -303,8 +305,17 @@ fun SearchNewsBar(
     onWordChange: (String) -> Unit,
     onSearchPress:(Boolean)-> Unit
 ){
-    //wrod变化就重新执行初始化逻辑
-    val textFieldValue= remember(word) { mutableStateOf(word?:"") }
+    // 唯一的状态：管理输入框的文本和光标位置
+    val textFieldState = remember { mutableStateOf(TextFieldValue()) }
+
+    // 关键点：监听外部 word 变化，同步到输入框并移动光标到末尾
+    LaunchedEffect(word) {
+        val newText = word ?: ""
+        textFieldState.value = TextFieldValue(
+            text = newText,
+            selection = TextRange(newText.length) // 光标在末尾
+        )
+    }
 
     val coroutineScope = rememberCoroutineScope()
     // 用于在用户停止输入一段时间后再进行搜索请求
@@ -337,15 +348,15 @@ fun SearchNewsBar(
                     .size(15.dp),
                 contentDescription = "Mic Icon")
         },
-        value = textFieldValue.value,
-        onValueChange = {
-            textFieldValue.value=it
+        value = textFieldState.value,
+        onValueChange = {newState->
+            textFieldState.value=newState
             // 如果当前协程任务存在，则取消它
             job?.cancel()
             // 启动一个新的协程，并延迟触发 onWordChange
             job = coroutineScope.launch {
-                delay(500) // 延迟200ms后再执行
-                onWordChange(it)
+                delay(250) // 延迟500ms后再执行
+                onWordChange(newState.text)
             }
         },
         keyboardOptions= KeyboardOptions.Default.copy(
