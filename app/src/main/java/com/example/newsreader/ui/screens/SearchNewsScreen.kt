@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -71,6 +73,27 @@ fun SearchNewsScreen(searchNewsViewModel: SearchNewsViewModel= hiltViewModel()){
     //获取头条热点
     val TouTiaoHotList by searchNewsViewModel.TouTiaoHotList.collectAsState()
 
+
+    // 注册启动器，契约为 StartActivityForResult
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        // 当目标 Activity 结束后回调
+        if (result.resultCode == Activity.RESULT_OK) {
+            val returnedValue = result.data?.getBooleanExtra("loadSearchHistory",false)
+            Log.d("returnedValueTAG", returnedValue.toString())
+            //重新获取历史搜索记录,刷新historicalSearchList重组SearchHistoryView组件
+            if (returnedValue == true) searchNewsViewModel.loadSearchHistory()
+        }
+    }
+
+    // UI 部分，点击按钮启动目标 Activity
+    /*Button(onClick = {
+        val intent = Intent(context, VoiceInputActivity::class.java)
+        launcher.launch(intent)
+    }) {
+        Text("启动语音输入")
+    }*/
     Column {
         Row(
             modifier = Modifier
@@ -102,7 +125,8 @@ fun SearchNewsScreen(searchNewsViewModel: SearchNewsViewModel= hiltViewModel()){
                 //语音icon被点击，跳转到语音输入活动
                 onMicClicked = {
                     val intent= Intent(context,VoiceInputActivity::class.java)
-                    context.startActivity(intent)
+                    launcher.launch(intent)
+                    //context.startActivity(intent)
                 }
             )
             Spacer(modifier = Modifier.width(20.dp))

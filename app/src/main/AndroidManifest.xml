@@ -18,6 +18,11 @@
         android:usesCleartextTraffic="true"
         tools:ignore="ExtraText">
         <activity
+            android:name=".ui.activity.MineActiviti"
+            android:exported="false"
+            android:label="@string/title_activity_mine_activiti"
+            android:theme="@style/Theme.NewsReader" />
+        <activity
             android:name=".ui.activity.VoiceInputActivity"
             android:exported="false"
             android:label="@string/title_activity_voice_input_screen"

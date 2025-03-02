@@ -97,7 +97,7 @@ class SearchNewsViewModel @Inject constructor(
     }
 
     // 从 SharedPreferences 中加载历史搜索记录
-    private fun loadSearchHistory() {
+    fun loadSearchHistory() {
         val savedHistory = preferencesManager.getString("search_history")
         if (savedHistory!="") _historicalSearchList.value = savedHistory.split(",").toMutableList()
 

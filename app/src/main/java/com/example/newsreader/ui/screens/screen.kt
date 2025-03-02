@@ -2,6 +2,7 @@ package com.example.newsreader.ui.screens
 
 import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -132,8 +133,9 @@ fun MainScreen(newsShowViewModel: NewsShowViewModel = hiltViewModel()) {
                     LaunchedEffect(isRefreshing) {
                         if (isRefreshing) {
                             // 在这里模拟延迟，延迟 2 秒后更新 isRefreshing 为 false
-                            delay(1000) // 延迟 2 秒
+                            delay(1000) // 延迟 1 秒
                             newsShowViewModel.getIsRefreshing(false) // 延迟后结束刷新
+                            Toast.makeText(context,"更新成功",Toast.LENGTH_SHORT).show()
                         }
                     }
                     LazyColumn  {
