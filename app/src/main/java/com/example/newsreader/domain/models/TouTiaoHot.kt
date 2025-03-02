@@ -4,5 +4,5 @@ import com.squareup.moshi.Json
 
 //头条热点词
 data class TouTiaoHot(
-    @Json(name = "word")val word:String
+    @Json(name = "title")val title:String
 )

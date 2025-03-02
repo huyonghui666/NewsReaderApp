@@ -22,9 +22,9 @@ interface SearchNewsApiService {
     ): SearchNewsModel
 
     /**
-     * 获取头条热点
+     * 获取每日简报热点
      * @param key
      */
-    @GET("toutiaohot")
+    @GET("bulletin")
     suspend fun getTouTiaohotHot(@Query("key")key: String=BuildConfig.SearchNews_KEY): TouTiaoHotResponse
 }

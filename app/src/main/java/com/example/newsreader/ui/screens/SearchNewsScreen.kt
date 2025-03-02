@@ -1,7 +1,10 @@
 package com.example.newsreader.ui.screens
 
+import android.app.Activity
+import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -38,11 +42,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.log
+import com.example.newsreader.ui.activity.VoiceInputActivity
 import com.example.newsreader.ui.components.ClearHistoryDialog
+import com.example.newsreader.ui.components.LoadSearchNews
 import com.example.newsreader.ui.components.NewsShowCard
 import com.example.newsreader.ui.components.SearchHistoryView
 import com.example.newsreader.ui.components.SearchNewsBar
 import com.example.newsreader.ui.components.SearchNewsShowCard
+import com.example.newsreader.ui.components.TouTiaoHotView
+import com.example.newsreader.ui.components.VoiceInputScreen
 import com.example.newsreader.ui.viewmodel.SearchNewsViewModel
 import kotlinx.coroutines.launch
 
@@ -52,7 +60,6 @@ import kotlinx.coroutines.launch
 fun SearchNewsScreen(searchNewsViewModel: SearchNewsViewModel= hiltViewModel()){
     val searchWord by searchNewsViewModel.searchWord.collectAsState()
     val searchNewsFlow = searchNewsViewModel.searchNewsFlow.collectAsLazyPagingItems()
-    //val searchPress by searchNewsViewModel.searchPress.collectAsState()
     val rememberCoroutineScope= rememberCoroutineScope()
     val historicalSearchList by searchNewsViewModel.historicalSearchList.collectAsState()
     // 控制是否显示清空对话框的状态
@@ -61,13 +68,14 @@ fun SearchNewsScreen(searchNewsViewModel: SearchNewsViewModel= hiltViewModel()){
     val searchNewsShow by searchNewsViewModel.searchNewsShow.collectAsState()
     val context = LocalContext.current
     val isLoading by searchNewsViewModel.isLoading.collectAsState()
-
+    //获取头条热点
+    val TouTiaoHotList by searchNewsViewModel.TouTiaoHotList.collectAsState()
 
     Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth() // 让 Row 填充父容器宽度
-                .padding(16.dp) // 给布局添加一些内边距
+                .padding(start = 16.dp, end = 16.dp) // 给布局添加一些内边距
                 .windowInsetsPadding(WindowInsets.systemBars),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -90,6 +98,11 @@ fun SearchNewsScreen(searchNewsViewModel: SearchNewsViewModel= hiltViewModel()){
                     }
                     //保存历史搜索关键词
                     searchNewsViewModel.addSearchKeyword(searchWord!!)
+                },
+                //语音icon被点击，跳转到语音输入活动
+                onMicClicked = {
+                    val intent= Intent(context,VoiceInputActivity::class.java)
+                    context.startActivity(intent)
                 }
             )
             Spacer(modifier = Modifier.width(20.dp))
@@ -97,6 +110,9 @@ fun SearchNewsScreen(searchNewsViewModel: SearchNewsViewModel= hiltViewModel()){
             Text(
                 text = "取消",
                 color = MaterialTheme.colorScheme.surfaceDim,
+                modifier = Modifier.clickable {
+                    (context as? Activity)?.finish()
+                }
             )
         }
         if (searchNewsShow){
@@ -108,36 +124,7 @@ fun SearchNewsScreen(searchNewsViewModel: SearchNewsViewModel= hiltViewModel()){
                 }
             }else{
                 //加载搜索新闻
-                LazyColumn {
-                    items(
-                        count = searchNewsFlow.itemCount,
-                        //key = { index -> searchNewsFlow[index]?.id ?: index }
-                    ) { index ->
-                        //item是数据模块
-                        val item = searchNewsFlow[index]
-                        if (item != null) {
-                            if (item.picUrl!="" && item.url!="") {
-                                SearchNewsShowCard(searchNews = item)
-                            }
-                            //SearchNewsShowCard(searchNews = item)
-                        }
-                    }
-                    // 加载状态指示器
-                    searchNewsFlow.apply {
-                        when {
-                            loadState.refresh is LoadState.Loading -> {
-                                item { CircularProgressIndicator() }// 刷新加载中
-                            }
-                            loadState.append is LoadState.Loading -> {
-                                item { CircularProgressIndicator()}// 加载更多时的 loading
-                            }
-                            loadState.refresh is LoadState.Error -> {
-                                val error = loadState.refresh as LoadState.Error
-                                Toast.makeText(context,"加载失败!",Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
-                }
+                LoadSearchNews(searchNewsFlow)
             }
         }else{
             //历史搜索view
@@ -163,6 +150,10 @@ fun SearchNewsScreen(searchNewsViewModel: SearchNewsViewModel= hiltViewModel()){
                     searchNewsViewModel.clearSearchHistory()
                     showClearDialog=false
                 })
+            }
+            //热搜榜
+            if (TouTiaoHotList.isNotEmpty()){
+                TouTiaoHotView(TouTiaoHotList)
             }
         }
     }

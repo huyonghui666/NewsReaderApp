@@ -106,4 +106,7 @@ dependencies {
     //刷新组件
     implementation ("androidx.compose.material3:material3:1.3.1")
 
+    //icons
+    implementation ("androidx.compose.material:material-icons-extended:1.7.8")
+
 }

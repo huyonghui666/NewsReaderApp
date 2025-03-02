@@ -1,6 +1,7 @@
 package com.example.newsreader.data.repository
 
 
+import android.util.Log
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.example.newsreader.data.remote.NewsShowRemoteDataSource
@@ -61,16 +62,16 @@ class NewsShowRepositoryImpl @Inject constructor(
     /**
      * 获取头条热点
      */
-    /*override suspend fun getTouTiaohotHot(): List<TouTiaoHot> {*//*
-        val newsShow = searchNewsDataRemote. (channel)
-        Log.d("NewsShowRepositoryImpl", newsShow.newsShowData.toString())
-        return newsShow.newsShowData!!.map {
-            NewsShowModel(
-                time = it.time,
-                title = it.title,
-                imgsrc = it.imgsrc
+    override suspend fun getTouTiaohotHot(): List<TouTiaoHot> {
+        val touTiaoHotResponse = searchNewsDataRemote.getTouTiaohotHot()
+        Log.d("TouTiaohotHotTAG", touTiaoHotResponse.result.hotList.toString())
+        return touTiaoHotResponse.result.hotList
+            .take(10)
+            .map {
+            TouTiaoHot(
+                title = it.title
             )
-        }*//*
-    }*/
+        }
+    }
 
 }

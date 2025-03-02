@@ -4,26 +4,24 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.paging.cachedIn
 import com.example.newsreader.domain.usecase.GetSearchNewsUseCase
+import com.example.newsreader.util.PreferencesManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import javax.inject.Inject
-import androidx.lifecycle.viewModelScope
-import com.example.newsreader.domain.models.TouTiaoHot
-import com.example.newsreader.util.PreferencesManager
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.launch
+import javax.inject.Inject
+import androidx.lifecycle.viewModelScope
 
 @HiltViewModel
-class SearchNewsViewModel @Inject constructor(
+class VoiceInputViewModel @Inject constructor(
     private val getSearchNewsUseCase: GetSearchNewsUseCase,
-    private val preferencesManager: PreferencesManager
-) : ViewModel() {
+    private val preferencesManager: PreferencesManager,
+):ViewModel(){
 
     // 搜索关键字
     private val _searchWord = MutableStateFlow<String?>(null)
@@ -39,7 +37,6 @@ class SearchNewsViewModel @Inject constructor(
 
     //当点击搜索进行数据获取
     private val _searchPress=MutableStateFlow<Boolean>(false)
-    //val searchPress=_searchPress.asStateFlow()
     val searchNewsFlow=_searchPress
         .filter { it }    //过滤true的可以继续进行flatMapLatest
         .flatMapLatest {searchPress->
@@ -62,29 +59,12 @@ class SearchNewsViewModel @Inject constructor(
                     Log.e("SearchNewsFlow", "Error fetching data: ${exception.message}")
                 }
                 .cachedIn(viewModelScope)
-    }
+        }
+
 
     //历史搜索列表
     private val _historicalSearchList = MutableStateFlow(mutableListOf<String>())
     val historicalSearchList: StateFlow<MutableList<String>> = _historicalSearchList.asStateFlow()
-
-    //新闻列表数据
-    private val _TouTiaoHotList = MutableStateFlow<List<TouTiaoHot>>(emptyList())
-    val TouTiaoHotList= _TouTiaoHotList.asStateFlow()
-    //获取头条热点
-    fun loadTouTiaohotHot() {
-        viewModelScope.launch {
-            getSearchNewsUseCase()
-                .catch { e->
-                    Log.e("SearchNewsFlow", "Error fetching data: ${e.message}")
-                }
-                .collect { newsShowList ->
-                    _TouTiaoHotList.value = newsShowList
-                }
-        }
-    }
-
-
 
     // 最大缓存数量
     private val maxSearchHistory = 10
@@ -92,8 +72,6 @@ class SearchNewsViewModel @Inject constructor(
     init {
         // 初始化时从 SharedPreferences 加载历史搜索记录
         loadSearchHistory()
-        //获取头条热点
-        loadTouTiaohotHot()
     }
 
     // 从 SharedPreferences 中加载历史搜索记录
@@ -126,13 +104,6 @@ class SearchNewsViewModel @Inject constructor(
         saveSearchHistory()
     }
 
-    //清空历史搜索
-    fun clearSearchHistory(){
-        _historicalSearchList.value= mutableListOf()
-        preferencesManager.clear()
-    }
-
-
     //改变word来触发搜索
     fun getSearchWord(word:String){
         _searchWord.value=word
@@ -147,6 +118,4 @@ class SearchNewsViewModel @Inject constructor(
     fun getSearchNewsShow(searchNewsShow:Boolean){
         _searchNewsShow.value=searchNewsShow
     }
-
-
 }

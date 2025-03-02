@@ -24,5 +24,5 @@ interface NewsShowRepository {
     /**
      * 获取头条热点
      */
-    //suspend fun getTouTiaohotHot():List<TouTiaoHot>
+    suspend fun getTouTiaohotHot():List<TouTiaoHot>
 }
