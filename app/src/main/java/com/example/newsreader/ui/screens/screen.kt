@@ -25,13 +25,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -42,6 +46,7 @@ import com.example.newsreader.ui.components.BottomNavBar
 import com.example.newsreader.ui.components.IntentSearchNewsBar
 import com.example.newsreader.ui.components.NewsCategoryTabs
 import com.example.newsreader.ui.components.NewsShowCard
+import com.example.newsreader.ui.viewmodel.LoginViewModel
 import com.example.newsreader.ui.viewmodel.NewsShowViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -61,8 +66,10 @@ fun MainScreen(newsShowViewModel: NewsShowViewModel = hiltViewModel()) {
     val isRefreshing by newsShowViewModel.isRefreshing.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    //控制显示Home还是Mine
+    var showHome by remember { mutableStateOf(true) }
 
-    //设置组件在系统栏下面
+
     Scaffold(modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
         topBar = {
             Column{
@@ -89,7 +96,6 @@ fun MainScreen(newsShowViewModel: NewsShowViewModel = hiltViewModel()) {
                 )
             }
         },
-        bottomBar = { BottomNavBar(navController) },
     ) { innerPadding ->
         if (isLoading){
             Box(
@@ -105,20 +111,28 @@ fun MainScreen(newsShowViewModel: NewsShowViewModel = hiltViewModel()) {
             ){
                 Text(text = "Error: $errorMessage")
             }
-        }else{
+        }else {
             Box(modifier = Modifier.padding(innerPadding)) {
-                NavHost(navController, startDestination = "home") {
-                    composable("home") { }
-                    composable("profile") { }
-                }
-                //刷新组件
+                //导航条包含首页和我的
+                /*NavHost(navController, startDestination = "home") {
+                    composable("home") {
+                        showHome = true
+                        //val intent:Intent=Intent(context,MineActiviti::class.java)
+                    }
+                    composable("profile") {
+                        showHome = false
+                        //val intent:Intent=Intent(context,MineActiviti::class.java)
+                    }
+                }*/
+                //下拉刷新组件
                 val state = rememberPullToRefreshState()
                 PullToRefreshBox(
-                    isRefreshing =isRefreshing,
+                    isRefreshing = isRefreshing,
                     state = state,
                     onRefresh = {
                         newsShowViewModel.getNewsShow(currentChannel)
-                        newsShowViewModel.getIsRefreshing(true) },
+                        newsShowViewModel.getIsRefreshing(true)
+                    },
                     indicator = {
                         Indicator(
                             modifier = Modifier.align(Alignment.TopCenter),
@@ -135,17 +149,17 @@ fun MainScreen(newsShowViewModel: NewsShowViewModel = hiltViewModel()) {
                             // 在这里模拟延迟，延迟 2 秒后更新 isRefreshing 为 false
                             delay(1000) // 延迟 1 秒
                             newsShowViewModel.getIsRefreshing(false) // 延迟后结束刷新
-                            Toast.makeText(context,"更新成功",Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "更新成功", Toast.LENGTH_SHORT).show()
                         }
                     }
-                    LazyColumn  {
+                    LazyColumn {
                         //加载新闻
                         items(
                             count = newsItems.itemCount,
                         ) { index ->
                             val item = newsItems[index]
                             if (item != null) {
-                                if (item.url!="" && item.imgsrc!=""){
+                                if (item.url != "" && item.imgsrc != "") {
                                     //Log.d("newsShowTAG", item.title.toString())
                                     NewsShowCard(item)
                                 }
@@ -158,8 +172,9 @@ fun MainScreen(newsShowViewModel: NewsShowViewModel = hiltViewModel()) {
                                 loadState.refresh is LoadState.Loading -> {
                                     item { CircularProgressIndicator() }// 刷新加载中
                                 }
+
                                 loadState.append is LoadState.Loading -> {
-                                    item { CircularProgressIndicator()}// 加载更多时的 loading
+                                    item { CircularProgressIndicator() }// 加载更多时的 loading
                                 }
                             }
                         }
@@ -168,6 +183,167 @@ fun MainScreen(newsShowViewModel: NewsShowViewModel = hiltViewModel()) {
             }
         }
     }
+    /*if (showHome){
+        //设置组件在系统栏下面
+        Scaffold(modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
+            topBar = {
+                Column{
+                    //点击跳转到搜索栏
+                    IntentSearchNewsBar(
+                        modifier = Modifier
+                            .padding(30.dp,20.dp,0.dp,0.dp)
+                            //点击跳转搜索页面
+                            .clickable {
+                                val intent=Intent(context,SearchNewsActivity::class.java)
+                                context.startActivity(intent)
+                            }
+                    )
+                    //新闻导航条
+                    NewsCategoryTabs(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        onCategorySelected = { channel ->
+                            // 调用Api去搜索相关频道的新闻
+                            coroutineScope.launch {
+                                newsShowViewModel.getNewsShow(channel)
+                            }
+                        }
+                    )
+                }
+            },
+            //底部导航条
+            bottomBar = { BottomNavBar(navController) },
+        ) { innerPadding ->
+            if (isLoading){
+                Box(
+                    modifier = Modifier.padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ){
+                    CircularProgressIndicator()
+                }
+            }else if (errorMessage!=null){
+                Box(
+                    modifier = Modifier.padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ){
+                    Text(text = "Error: $errorMessage")
+                }
+            }else{
+                Box(modifier = Modifier.padding(innerPadding)) {
+                    //导航条包含首页和我的
+                    NavHost(navController, startDestination = "home") {
+                        composable("home") {
+                            showHome=true
+                            //val intent:Intent=Intent(context,MineActiviti::class.java)
+                        }
+                        composable("profile") {
+                            showHome=false
+                            //val intent:Intent=Intent(context,MineActiviti::class.java)
+                        }
+                    }
+                    //下拉刷新组件
+                    val state = rememberPullToRefreshState()
+                    PullToRefreshBox(
+                        isRefreshing =isRefreshing,
+                        state = state,
+                        onRefresh = {
+                            newsShowViewModel.getNewsShow(currentChannel)
+                            newsShowViewModel.getIsRefreshing(true) },
+                        indicator = {
+                            Indicator(
+                                modifier = Modifier.align(Alignment.TopCenter),
+                                isRefreshing = isRefreshing,
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                state = state
+                            )
+                        }
+                    ) {
+                        // 使用 LaunchedEffect 来延迟结束刷新
+                        LaunchedEffect(isRefreshing) {
+                            if (isRefreshing) {
+                                // 在这里模拟延迟，延迟 2 秒后更新 isRefreshing 为 false
+                                delay(1000) // 延迟 1 秒
+                                newsShowViewModel.getIsRefreshing(false) // 延迟后结束刷新
+                                Toast.makeText(context,"更新成功",Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                        LazyColumn  {
+                            //加载新闻
+                            items(
+                                count = newsItems.itemCount,
+                            ) { index ->
+                                val item = newsItems[index]
+                                if (item != null) {
+                                    if (item.url!="" && item.imgsrc!=""){
+                                        //Log.d("newsShowTAG", item.title.toString())
+                                        NewsShowCard(item)
+                                    }
+                                }
+                            }
+
+                            // 加载状态指示器
+                            newsItems.apply {
+                                when {
+                                    loadState.refresh is LoadState.Loading -> {
+                                        item { CircularProgressIndicator() }// 刷新加载中
+                                    }
+                                    loadState.append is LoadState.Loading -> {
+                                        item { CircularProgressIndicator()}// 加载更多时的 loading
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }else{
+        var isLoggedIn by remember { mutableStateOf(false) }
+        //设置组件在系统栏下面
+        Scaffold(
+            modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
+            //底部导航条
+            bottomBar = { BottomNavBar(navController) },
+        ){innerPadding->
+            Box(modifier = Modifier.padding(innerPadding)){
+                //导航条包含首页和我的
+                NavHost(navController, startDestination = "home") {
+                    //首页
+                    composable("home") {
+                        showHome=true
+                    }
+                    //我的
+                    composable("profile") {
+                        showHome=false
+                        MineScreen(
+                            navController = navController,
+                            isLoggedIn = isLoggedIn,
+                            onLoginClick = {
+                                if (!isLoggedIn) {
+                                    navController.navigate("login")
+                                    //navController.navigate("login")
+                                }
+                            }
+                        )
+                    }
+                    // 在现有的 NavHost 中添加，登录界面
+                    composable("login") {
+                        val viewModel = viewModel<LoginViewModel>()
+                        val uiState by viewModel.uiState.collectAsState()
+
+                        LoginScreen(
+                            navController = navController,
+                            onLoginSuccess = {
+                                isLoggedIn = true
+                                navController.navigateUp()
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }*/
 }
 
 
