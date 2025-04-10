@@ -1,6 +1,7 @@
 package com.example.newsreader
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -16,19 +17,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.newsreader.ui.components.BottomNavBar
-import com.example.newsreader.ui.screens.LoginScreen
-import com.example.newsreader.ui.screens.MainScreen
-import com.example.newsreader.ui.screens.MineScreen
-import com.example.newsreader.ui.viewmodel.LoginViewModel
+import androidx.navigation.navArgument
+import com.example.newsreader.collectionAndHistory.ui.screens.NewsWebViewScreen
+import com.example.newsreader.newsreaderlogin.ui.Screen.AgreementScreen
+import com.example.newsreader.newsreaderlogin.ui.Screen.AgreementType
+import com.example.newsreader.newsreaderlogin.ui.Screen.LoginMainScreen
+import com.example.newsreader.newsreaderlogin.ui.viewmodel.MainViewModel
+import com.example.newsreader.newsreadershow.ui.components.BottomNavBar
+import com.example.newsreader.newsreadershow.ui.screens.MainScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -47,7 +51,8 @@ class MainActivity : ComponentActivity() {
             MaterialTheme  {
                 //底部导航条navController
                 val navController = rememberNavController()
-                var isLoggedIn by remember { mutableStateOf(false) }
+                val viewModel: MainViewModel = hiltViewModel()
+
                 Scaffold(modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
                     //底部导航条
                     bottomBar = { BottomNavBar(navController) },
@@ -57,39 +62,82 @@ class MainActivity : ComponentActivity() {
                         NavHost(navController, startDestination = "home") {
                             //首页
                             composable("home") {
-                                MainScreen()
+                                MainScreen(navController= navController)
                                 //navController.navigate("profile")
                             }
-                            //我的
+                            //个人资料
                             composable("profile") {
-                                MineScreen(
-                                    navController = navController,
-                                    isLoggedIn = isLoggedIn,
-                                    onLoginClick = {
-                                        if (!isLoggedIn) {
-                                            navController.navigate("login")
-                                            //navController.navigate("login")
-                                        }
+                                LoginMainScreen(navController = navController,viewModel=viewModel)
+//                                MineScreen(
+//                                    navController = navController,
+//                                    isLoggedIn = isLoggedIn,
+//                                    onLoginClick = {
+//                                        if (!isLoggedIn) {
+//                                            navController.navigate("login")
+//                                            //navController.navigate("login")
+//                                        }
+//                                    }
+//                                )
+                            }
+                            //隐私和用户协议
+                            composable(
+                                route = "agreement/{type}",
+                                arguments = listOf(
+                                    navArgument("type") {
+                                        type = NavType.StringType
+                                        defaultValue = "user"
                                     }
                                 )
+                            ) { backStackEntry ->
+                                val agreementType = when(backStackEntry.arguments?.getString("type")) {
+                                    "user" -> AgreementType.USER_AGREEMENT
+                                    "privacy" -> AgreementType.PRIVACY_POLICY
+                                    else -> AgreementType.USER_AGREEMENT
+                                }
+                                AgreementScreen(
+                                    navController = navController,
+                                    agreementType = agreementType
+                                )
                             }
-                            // 在现有的 NavHost 中添加，登录界面
-                            composable("login") {
-                                val viewModel = viewModel<LoginViewModel>()
-                                val uiState by viewModel.uiState.collectAsState()
 
-                                LoginScreen(
-                                    navController = navController,
-                                    onLoginSuccess = {
-                                        isLoggedIn = true
-                                        navController.navigateUp()
+                            // 在现有的 NavHost 中添加，登录界面
+//                            composable("login") {
+//                                val viewModel = viewModel<LoginViewModel>()
+//                                val uiState by viewModel.uiState.collectAsState()
+//
+//                                LoginScreen(
+//                                    navController = navController,
+//                                    onLoginSuccess = {
+//                                        isLoggedIn = true
+//                                        navController.navigateUp()
+//                                    }
+//                                )
+//                            }
+
+                            // 添加WebView路由
+                            composable(
+                                route = "news_web_view/{url}",
+                                arguments = listOf(
+                                    navArgument("url") {
+                                        type = NavType.StringType
+                                        nullable = true //设置默认路由为空
                                     }
                                 )
+                            ) { backStackEntry ->
+                                val url = backStackEntry.arguments?.getString("url") ?: ""
+                                val title = backStackEntry.arguments?.getString("title") ?: "新闻详情"
+                                //Log.d("titleTAG", title)
+                                NewsWebViewScreen(
+                                    url = url,
+                                    title = title,
+                                    onBackClick = { navController.navigateUp() }
+                                )
                             }
+
                         }
                     }
                 }
-                /*MainScreen()*/
+
 
             }
         }
