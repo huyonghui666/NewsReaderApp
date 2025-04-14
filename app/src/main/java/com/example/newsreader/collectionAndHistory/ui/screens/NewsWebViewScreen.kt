@@ -3,6 +3,9 @@ package com.example.newsreader.collectionAndHistory.ui.screens
 import android.util.Log
 import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -12,7 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.newsreader.collectionAndHistory.ui.CustomWebViewClient
-import com.example.newsreader.collectionAndHistory.ui.viewmodel.WebViewModel
+import com.example.newsreader.collectionAndHistory.ui.viewmodel.FavoritesViewModel
+import com.example.newsreader.collectionAndHistory.ui.viewmodel.HistoryViewModel
 
 
 /**
@@ -23,13 +27,32 @@ import com.example.newsreader.collectionAndHistory.ui.viewmodel.WebViewModel
 fun NewsWebViewScreen(
     url: String,
     title: String,
+    imgsrc:String,
     onBackClick: () -> Unit,
-    viewModel: WebViewModel = hiltViewModel()
+    favoritesViewModel: FavoritesViewModel = hiltViewModel(),
+    historyViewModel: HistoryViewModel = hiltViewModel(),
 ) {
-    val webViewState by viewModel.webViewState.collectAsState()
+    val isFavorite by favoritesViewModel.isFavorite.collectAsState()
+    //检查新闻是否已收藏
+    favoritesViewModel.checkFavoriteStatus(url)
+
+    //添加到历史记录中
+    LaunchedEffect(url){
+        historyViewModel.toggleHistory(url,title,imgsrc) }
+
 
     // 保持WebView实例
     val webView = remember { mutableStateOf<WebView?>(null) }
+
+    val tint by animateColorAsState(
+        targetValue = if (isFavorite) {
+            MaterialTheme.colorScheme.error
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        },
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "favorite color"
+    )
 
     Scaffold(
         topBar = {
@@ -41,18 +64,24 @@ fun NewsWebViewScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.toggleFavorite() }) {
+                    IconButton(
+                        onClick = {
+                            favoritesViewModel.setIsFavorite(!isFavorite)
+                            favoritesViewModel.toggleFavorite(url,title,imgsrc)
+
+                        }
+                    ) {
                         Icon(
-                            imageVector = if (webViewState.isFavorite){
-                                Log.d("urlTAG", "$url  $title")
+                            imageVector = if (isFavorite){
                                 Icons.Default.Favorite
                             }
                             else
                                 Icons.Default.FavoriteBorder,
-                            contentDescription = if (webViewState.isFavorite)
+                            contentDescription = if (isFavorite)
                                 "取消收藏"
                             else
-                                "收藏"
+                                "收藏",
+                            tint=tint
                         )
                     }
                 }

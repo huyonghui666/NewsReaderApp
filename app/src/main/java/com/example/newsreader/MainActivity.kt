@@ -26,7 +26,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.newsreader.collectionAndHistory.ui.screens.FavoritesScreen
+import com.example.newsreader.collectionAndHistory.ui.screens.HistoryScreen
 import com.example.newsreader.collectionAndHistory.ui.screens.NewsWebViewScreen
+import com.example.newsreader.collectionAndHistory.ui.viewmodel.FavoritesViewModel
 import com.example.newsreader.newsreaderlogin.ui.Screen.AgreementScreen
 import com.example.newsreader.newsreaderlogin.ui.Screen.AgreementType
 import com.example.newsreader.newsreaderlogin.ui.Screen.LoginMainScreen
@@ -54,8 +57,8 @@ class MainActivity : ComponentActivity() {
                 val viewModel: MainViewModel = hiltViewModel()
 
                 Scaffold(modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
-                    //底部导航条
-                    bottomBar = { BottomNavBar(navController) },
+//                    //底部导航条
+//                    bottomBar = { BottomNavBar(navController) },
                 ) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
                         //导航条包含首页和我的
@@ -114,23 +117,45 @@ class MainActivity : ComponentActivity() {
 //                                )
 //                            }
 
-                            // 添加WebView路由
+                            // 添加WebView路由,在package com.example.newsreader.newsreadershow.ui.components中
                             composable(
-                                route = "news_web_view/{url}",
+                                route = "news_web_view/{url}?title={title}&imgsrc={imgsrc}",
                                 arguments = listOf(
                                     navArgument("url") {
                                         type = NavType.StringType
                                         nullable = true //设置默认路由为空
+                                    },
+                                    navArgument("title") {
+                                        type = NavType.StringType
+                                        defaultValue = "新闻详情"
+                                    },
+                                    navArgument("imgsrc") {
+                                        type = NavType.StringType
+                                        defaultValue = ""
                                     }
                                 )
                             ) { backStackEntry ->
                                 val url = backStackEntry.arguments?.getString("url") ?: ""
                                 val title = backStackEntry.arguments?.getString("title") ?: "新闻详情"
-                                //Log.d("titleTAG", title)
+                                val imgsrc = backStackEntry.arguments?.getString("imgsrc") ?: ""
                                 NewsWebViewScreen(
                                     url = url,
                                     title = title,
+                                    imgsrc=imgsrc,
                                     onBackClick = { navController.navigateUp() }
+                                )
+                            }
+
+                            //收藏
+                            composable("collection") {
+                                FavoritesScreen(
+                                    navController= navController,
+                                )
+                            }
+                            //历史记录
+                            composable("history") {
+                                HistoryScreen(
+                                    navController= navController,
                                 )
                             }
 

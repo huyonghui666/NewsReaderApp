@@ -39,6 +39,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.newsreader.newsreadershow.ui.activity.SearchNewsActivity
+import com.example.newsreader.newsreadershow.ui.components.BottomNavBar
 import com.example.newsreader.newsreadershow.ui.components.IntentSearchNewsBar
 import com.example.newsreader.newsreadershow.ui.components.NewsCategoryTabs
 import com.example.newsreader.newsreadershow.ui.components.NewsShowCard
@@ -91,6 +92,8 @@ fun MainScreen(
                 )
             }
         },
+        //底部导航条
+        bottomBar = { BottomNavBar(navController) }
     ) { innerPadding ->
         if (isLoading){
             Box(

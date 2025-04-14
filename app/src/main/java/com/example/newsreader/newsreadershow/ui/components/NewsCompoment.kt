@@ -105,7 +105,19 @@ fun NewsShowCard(
                 newsShowModel.url?.let {
                     //openWebPage(context, it)
                     // 在点击新闻项时，跳转到相应的新闻路由导航
-                    navController.navigate("news_web_view/${URLEncoder.encode(newsShowModel.url, "UTF-8")}?title=${URLEncoder.encode(newsShowModel.title, "UTF-8")}")
+                    navController.navigate(
+                        "news_web_view/${
+                            URLEncoder.encode(
+                                newsShowModel.url,
+                                "UTF-8"
+                            )
+                        }?title=${
+                            URLEncoder.encode(
+                                newsShowModel.title,
+                                "UTF-8"
+                            )
+                        }&imgsrc=${URLEncoder.encode(newsShowModel.imgsrc, "UTF-8")}"
+                    )
                 }
             }
             .padding(all = 8.dp),
@@ -118,7 +130,7 @@ fun NewsShowCard(
                     .padding(0.dp, 0.dp, 5.dp, 0.dp)
                     .weight(3f)
             ) {
-                // 最佳实践：使用 Box 布局实现底部定位
+                // 使用 Box 布局实现底部定位
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

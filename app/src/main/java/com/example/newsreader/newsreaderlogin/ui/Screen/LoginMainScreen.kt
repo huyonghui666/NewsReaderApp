@@ -1,5 +1,8 @@
 package com.example.newsreader.newsreaderlogin.ui.Screen
 
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -82,10 +85,21 @@ fun LoginMainScreen(
             TopLoginSection(isLoggedIn, onLoginClick={showLoginSheet = true})
 
             // 功能按钮区域
-            FunctionButtonsRow( onClick = {
+            FunctionButtonsRow( onClick = {text->
                 if (isLoggedIn){
-                    //TODO 执行相应的操作
-                    viewModel.getResourceToken()
+                    when(text){
+                        //TODO 执行评论被点击相关操作
+                        "评论" ->{}
+                        //TODO 执行收藏被点击相关操作
+                        "收藏" -> {navController.navigate("collection")}
+                        //TODO 执行关注被点击相关操作
+                        "关注" ->{}
+                        //TODO 执行历史被点击相关操作
+                        "历史" ->{
+                            navController.navigate("history")}
+                    }
+
+                    //viewModel.getResourceToken()
                 }else{
                     //显示底部弹出框
                     showLoginSheet=true
@@ -102,6 +116,7 @@ fun LoginMainScreen(
                     showLoginSheet=true
                 }
             })
+
         }
 
         //登录底部弹出框
@@ -195,7 +210,7 @@ private fun TopLoginSection(
 //布局一个评论、关注、收藏、历史的组件
 @Composable
 private fun FunctionButtonsRow(
-    onClick:()->Unit
+    onClick:  (String)->Unit
 ) {
     Row(
         modifier = Modifier
@@ -203,10 +218,10 @@ private fun FunctionButtonsRow(
             .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        FunctionButton("评论", Icons.Default.Comment,onClick)
-        FunctionButton("关注", Icons.Default.Favorite,onClick)
-        FunctionButton("收藏", Icons.Default.BookmarkBorder,onClick)
-        FunctionButton("历史", Icons.Default.History,onClick)
+        FunctionButton("评论", Icons.Default.Comment, onClick = {onClick("评论")})
+        FunctionButton("收藏", Icons.Default.Favorite,onClick = {onClick("收藏")})
+        FunctionButton("关注", Icons.Default.BookmarkBorder,onClick = {onClick("关注")})
+        FunctionButton("历史", Icons.Default.History,onClick = {onClick("历史")})
     }
 }
 
@@ -214,13 +229,13 @@ private fun FunctionButtonsRow(
 private fun FunctionButton(
     text: String,
     icon: ImageVector,
-    onClick: () -> Unit
+    onClick: (String) -> Unit
 
 ) {
 
     Column(modifier = Modifier.clickable {
         //执行点击操作
-            onClick()
+            onClick(text)
         }
     ){
         Icon(
